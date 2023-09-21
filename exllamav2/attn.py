@@ -16,7 +16,7 @@ from exllamav2.ext import exllamav2_ext as ext_c, none_tensor
 has_flash_attn = False
 try:
     import flash_attn
-    flash_attn_ver = [int(t) for t in flash_attn.__version__.split(".")]
+    flash_attn_ver = [int(t) for t in flash_attn.__version__.split(".") if t.isdigit()]
     if flash_attn_ver >= [2, 2, 1]:
         from flash_attn import flash_attn_func
         has_flash_attn = True
@@ -487,7 +487,7 @@ class ExLlamaV2Attention(ExLlamaV2Module):
             key_states = key_states.transpose(-1, -2)
 
             attn_weights = torch.matmul(query_states, key_states)
-
+            attn_weights /= math.sqrt(head_dim)
             if attn_mask is not None: attn_weights = attn_weights + attn_mask
             attn_weights = nn.functional.softmax(attn_weights, dim = -1, dtype = torch.float16)
 
